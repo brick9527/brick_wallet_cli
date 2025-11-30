@@ -1,0 +1,9 @@
+{
+  "apiKey": "your_apikey",
+  "apiSecret": "your_apisecret",
+  "proxy": {
+    "protocol": "http",
+    "host": "127.0.0.1",
+    "port": 3000
+  }
+}
