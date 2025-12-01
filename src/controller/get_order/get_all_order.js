@@ -1,0 +1,43 @@
+const { logger, spotClient } = process.brickWalletCli.ctx;
+const formatMyTradeRes = require('../../libs/format_my_trade_response');
+const calculateTradeList = require('../../libs/calculate/trade_list');
+const getSymbolInfo = require('../../libs/get_symbol_info');
+
+async function getAccountAllOrder(symbol, options = {}) {
+  let condition = {
+    symbol,
+  };
+
+  if (Object.keys(options)) {
+    condition = {
+      ...condition,
+      ...options,
+    };
+  }
+
+  logger.debug('condition = ', JSON.stringify(condition));
+
+  const response = await spotClient.restAPI.myTrades(condition);
+
+  const rateLimits = response.rateLimits;
+  logger.debug('allOrderList() rate limits:', rateLimits);
+
+  const rawContent = await response.data();
+
+  logger.debug('data = ', JSON.stringify(rawContent));
+
+  const tradeList = formatMyTradeRes(rawContent);
+  const symbolInfo = getSymbolInfo(symbol);
+  if (!symbolInfo.status) {
+    logger.error(symbolInfo.errMsg);
+    return;
+  }
+
+  const calculateResult = calculateTradeList(tradeList, symbolInfo);
+
+  logger.debug(`${symbol} calculate result = ${JSON.stringify(calculateResult)}`);
+
+  return calculateResult;
+}
+
+module.exports = getAccountAllOrder;

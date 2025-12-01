@@ -21,13 +21,17 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "test",
+    "test": "node bin/test.js",
     "lint": "eslint src/ bin/ eslint.config.mjs README.md",
-    "getaccount": "node bin/get_account.js"
+    "getaccount": "node bin/get_account.js",
+    "getallorder": "node bin/get_all_order.js"
   },
   "dependencies": {
     "@binance/spot": "^24.0.1",
+    "cli-table": "^0.3.11",
+    "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
+    "lodash": "^4.17.21",
     "log4js": "^6.9.1"
   },
   "devDependencies": {

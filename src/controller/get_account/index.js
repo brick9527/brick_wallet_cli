@@ -1,7 +1,9 @@
-const logger = require('../../util/log4js').getLogger('getaccount');
+const { logger, spotClient } = process.brickWalletCli.ctx;
 
 async function getAccount() {
-  const response = await process.brickWalletCli.ctx.spotClient.restAPI.getAccount();
+  const response = await spotClient.restAPI.getAccount({
+    omitZeroBalances: true,
+  });
   // logger.info(response.rateLimits);
 
   logger.info(await response.data());
