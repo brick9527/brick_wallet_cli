@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const { logger, spotClient } = process.brickWalletCli.ctx;
 const formatMyTradeRes = require('../../libs/format_my_trade_response');
 const calculateTradeList = require('../../libs/calculate/trade_list');
@@ -33,7 +35,8 @@ async function getAccountAllOrder(symbol, options = {}) {
     return;
   }
 
-  const calculateResult = calculateTradeList(tradeList, symbolInfo);
+  const initData = _.get(process, `brickWalletCli.ctx.config.trade.${symbol}`, {});
+  const calculateResult = calculateTradeList(tradeList, symbolInfo, initData);
 
   logger.debug(`${symbol} calculate result = ${JSON.stringify(calculateResult)}`);
 
