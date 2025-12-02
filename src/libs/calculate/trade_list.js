@@ -71,7 +71,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
    */
   for (let i = 0; i < tradeList.length; i++) {
     const tradeItem = tradeList[i]
-    // 买入
+    // #region 买入
     if (tradeItem.isBuyer) {
       if (tradeItem.commissionAsset === symbolInfo.quoteCurrency) {
         // 手续费结算资产类型为计价货币
@@ -112,8 +112,9 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
       continue;
     }
+    // #endregion
 
-    // 卖出
+    // #region 卖出
     if (tradeItem.commissionAsset === symbolInfo.quoteCurrency) {
       // 手续费结算资产类型为计价货币
       result.totalNum = Number(result.totalNum) - Number(tradeItem.qty);
@@ -152,9 +153,12 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
     if (i === tradeList.length - 2) {
       _setSavePoint(result);
     }
+
+    // #endregion
   }
 
   // 计算平均价
+  // !若已经赚钱了，totalValue可能会<0, 导致avgPrice为负数
   result.avgPrice = Number(result.totalValue) / Number(result.totalNum);
 
   return {
