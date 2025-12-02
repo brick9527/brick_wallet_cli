@@ -4,6 +4,5 @@ config.json
 logs
 node_modules
 sample_data
-test
 xlsx
 test.json

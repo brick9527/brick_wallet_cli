@@ -4,8 +4,9 @@ const _ = require('lodash');
  * 设置存储点
  */
 function _setSavePoint(result) {
-  result.savePoint = {
-    ..._.pick(result.savePoint, ['_id', 'avgPrice']),
+  const savePoint = {
+    id: result.savePoint.id,
+    avgPrice: result.savePoint.avgPrice,
     counter: {
       buyer: {
         totalNum: Number(result?.counter?.buyer?.totalNum || 0).toFixed(8),
@@ -32,12 +33,14 @@ function _setSavePoint(result) {
     },
   };
 
-  result.savePoint.avgPrice = (Number(result.counter.buyer.totalValue) / Number(result.counter.buyer.totalNum)).toFixed(8);
+  savePoint.avgPrice = (Number(result.counter.buyer.totalValue) / Number(result.counter.buyer.totalNum)).toFixed(8);
+
+  return savePoint;
 }
 
 function calculateTradeList(tradeList, symbolInfo, initData = {}) {
   if (tradeList.length === 0) {
-    throw new Error(`tradeList 不能为空`);
+    throw new Error('tradeList 不能为空');
   }
 
   process.brickWalletCli.ctx.logger.debug('initData = ', JSON.stringify(initData));
@@ -148,7 +151,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
         // 设置存储点
         if (i === tradeList.length - 2) {
-          _setSavePoint(result);
+          result.savePoint = _setSavePoint(result);
         }
 
         continue;
@@ -171,7 +174,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
       // 设置存储点
       if (i === tradeList.length - 2) {
-        _setSavePoint(result);
+        result.savePoint = _setSavePoint(result);
       }
 
       continue;
@@ -197,7 +200,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
       // 设置存储点
       if (i === tradeList.length - 2) {
-        _setSavePoint(result);
+        result.savePoint = _setSavePoint(result);
       }
 
       continue;
@@ -221,14 +224,13 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
     // 设置存储点
     if (i === tradeList.length - 2) {
-      _setSavePoint(result);
+      result.savePoint = _setSavePoint(result);
     }
 
     // #endregion
   }
 
   // 计算平均价
-  // !若已经赚钱了，totalValue可能会<0, 导致avgPrice为负数
   // result.avgPrice = Number(result.totalValue) / Number(result.totalNum);
   result.avgPrice = Number(result.counter.buyer.totalValue) / Number(result.counter.buyer.totalNum);
 
@@ -262,6 +264,8 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
         notMaker: result.commissionInfo.seller.notMaker.toFixed(8),
       },
     },
+
+    savePoint: result.savePoint,
     firstIInfo: result.firstIInfo,
     lastInfo: result.lastInfo,
   };
