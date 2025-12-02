@@ -4,9 +4,35 @@ const _ = require('lodash');
  * 设置存储点
  */
 function _setSavePoint(result) {
-  result.savePoint.totalNum = result.totalNum.toFixed(8);
-  result.savePoint.totalValue = result.totalValue.toFixed(8);
-  result.savePoint.avgPrice = (Number(result.totalValue) / Number(result.totalNum)).toFixed(8);
+  result.savePoint = {
+    ..._.pick(result.savePoint, ['_id', 'avgPrice']),
+    counter: {
+      buyer: {
+        totalNum: Number(result?.counter?.buyer?.totalNum || 0).toFixed(8),
+        totalValue: Number(result?.counter?.buyer?.totalValue || 0).toFixed(8),
+      },
+      seller: {
+        totalNum: Number(result?.counter?.seller?.totalNum || 0).toFixed(8),
+        totalValue: Number(result?.counter?.seller?.totalValue || 0).toFixed(8),
+      },
+    },
+
+    commissionInfo: {
+      total: Number(result?.commissionInfo?.total || 0).toFixed(8),
+      buyer: {
+        total: Number(result?.commissionInfo?.buyer?.total || 0).toFixed(8),
+        maker: Number(result?.commissionInfo?.buyer?.maker || 0).toFixed(8),
+        notMaker: Number(result?.commissionInfo?.buyer?.notMaker || 0).toFixed(8),
+      },
+      seller: {
+        total: Number(result?.commissionInfo?.seller?.total || 0).toFixed(8),
+        maker: Number(result?.commissionInfo?.seller?.maker || 0).toFixed(8),
+        notMaker: Number(result?.commissionInfo?.seller?.notMaker || 0).toFixed(8),
+      },
+    },
+  };
+
+  result.savePoint.avgPrice = (Number(result.counter.buyer.totalValue) / Number(result.counter.buyer.totalNum)).toFixed(8);
 }
 
 function calculateTradeList(tradeList, symbolInfo, initData = {}) {
@@ -20,11 +46,18 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
     // avgPrice = totalValue / totalNum
     avgPrice: 0,
 
-    // 所有交易的价值之和（单位：USDT）
-    totalValue: initData?.totalValue || 0,
+    // 统计信息
+    counter: {
+      buyer: {
+        totalNum: Number(initData?.counter?.buyer?.totalNum || 0),
+        totalValue: Number(initData?.counter?.buyer?.totalValue || 0),
+      },
 
-    // 数量之和
-    totalNum: initData?.totalNum || 0,
+      seller: {
+        totalNum: Number(initData?.counter?.seller?.totalNum || 0),
+        totalValue: Number(initData?.counter?.seller?.totalValue || 0),
+      },
+    },
 
     // 手续费之和（单位：USDT）
     commissionInfo: {
@@ -47,8 +80,33 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
     savePoint: {
       id: _.last(tradeList)?.id,
       avgPrice: 0,
-      totalValue: 0,
-      totalNum: 0,
+      counter: {
+        buyer: {
+          totalNum: 0,
+          totalValue: 0,
+        },
+
+        seller: {
+          totalNum: 0,
+          totalValue: 0,
+        },
+      },
+
+      commissionInfo: {
+        total: 0,
+        buyer: {
+          total: 0,
+          maker: 0,
+          notMaker: 0,
+        },
+        seller: {
+          total: 0,
+          maker: 0,
+          notMaker: 0,
+        },
+      },
+      // totalValue: 0,
+      // totalNum: 0,
     },
   };
 
@@ -75,8 +133,11 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
     if (tradeItem.isBuyer) {
       if (tradeItem.commissionAsset === symbolInfo.quoteCurrency) {
         // 手续费结算资产类型为计价货币
-        result.totalNum = Number(result.totalNum) + Number(tradeItem.qty);
-        result.totalValue = Number(result.totalValue) + Number(tradeItem.quoteQty) - Number(tradeItem.commission);
+        result.counter.buyer.totalNum = Number(result.counter.buyer.totalNum) + Number(tradeItem.qty);
+        // result.totalNum = Number(result.totalNum) + Number(tradeItem.qty);
+        result.counter.buyer.totalValue = Number(result.counter.buyer.totalValue) + Number(tradeItem.quoteQty) - Number(tradeItem.commission);
+        // result.totalValue = Number(result.totalValue) + Number(tradeItem.quoteQty) - Number(tradeItem.commission);
+
         result.commissionInfo.total += Number(tradeItem.commission);
         result.commissionInfo.buyer.total += Number(tradeItem.commission);
         if (tradeItem.isMaker) {
@@ -94,8 +155,11 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
       }
 
       // 手续费结算资产类型为基础货币
-      result.totalNum = Number(result.totalNum) + Number(tradeItem.qty) - Number(tradeItem.commission);
-      result.totalValue = Number(result.totalValue) + Number(tradeItem.quoteQty);
+      result.counter.buyer.totalNum = Number(result.counter.buyer.totalNum) + Number(tradeItem.qty) - Number(tradeItem.commission);
+      // result.totalNum = Number(result.totalNum) + Number(tradeItem.qty) - Number(tradeItem.commission);
+      // result.totalValue = Number(result.totalValue) + Number(tradeItem.quoteQty);
+      result.counter.buyer.totalValue = Number(result.counter.buyer.totalValue) + Number(tradeItem.quoteQty);
+
       const quoteCurrrencyCommission = Number(tradeItem.price) * Number(tradeItem.commission);
       result.commissionInfo.total += quoteCurrrencyCommission;
       result.commissionInfo.buyer.total += quoteCurrrencyCommission;
@@ -114,11 +178,14 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
     }
     // #endregion
 
-    // #region 卖出
+    // #region 卖出(只计算totalNum，不计算totalValue)
     if (tradeItem.commissionAsset === symbolInfo.quoteCurrency) {
       // 手续费结算资产类型为计价货币
-      result.totalNum = Number(result.totalNum) - Number(tradeItem.qty);
-      result.totalValue = Number(result.totalValue) - Number(tradeItem.quoteQty) - Number(tradeItem.commission);
+      result.counter.seller.totalNum = Number(result.counter.seller.totalNum) + Number(tradeItem.qty);
+      result.counter.seller.totalValue = Number(result.counter.seller.totalValue) + Number(tradeItem.quoteQty) - Number(tradeItem.commission);
+
+      // result.totalNum = Number(result.totalNum) - Number(tradeItem.qty);
+      // result.totalValue = Number(result.totalValue) - Number(tradeItem.quoteQty) - Number(tradeItem.commission);
 
       result.commissionInfo.total += Number(tradeItem.commission);
       result.commissionInfo.seller.total += Number(tradeItem.commission);
@@ -137,8 +204,11 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
     }
     
     // 手续费结算资产类型为基础货币
-    result.totalNum = Number(result.totalNum) - Number(tradeItem.qty) - Number(tradeItem.commission);
-    result.totalValue = Number(result.totalValue) - Number(tradeItem.quoteQty);
+    result.counter.seller.totalNum = Number(result.counter.seller.totalNum) + Number(tradeItem.qty) - Number(tradeItem.commission);
+    result.counter.seller.totalValue = Number(result.counter.seller.totalValue) + Number(tradeItem.quoteQty);
+    
+    // result.totalNum = Number(result.totalNum) - Number(tradeItem.qty) - Number(tradeItem.commission);
+    // result.totalValue = Number(result.totalValue) - Number(tradeItem.quoteQty);
 
     const quoteCurrrencyCommission = Number(tradeItem.price) * Number(tradeItem.commission);
     result.commissionInfo.total += quoteCurrrencyCommission;
@@ -159,12 +229,26 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
   // 计算平均价
   // !若已经赚钱了，totalValue可能会<0, 导致avgPrice为负数
-  result.avgPrice = Number(result.totalValue) / Number(result.totalNum);
+  // result.avgPrice = Number(result.totalValue) / Number(result.totalNum);
+  result.avgPrice = Number(result.counter.buyer.totalValue) / Number(result.counter.buyer.totalNum);
 
   return {
     avgPrice: result.avgPrice.toFixed(8),
-    totalValue: result.totalValue.toFixed(8),
-    totalNum: result.totalNum.toFixed(8),
+    // totalValue: result.totalValue.toFixed(8),
+    // totalNum: result.totalNum.toFixed(8),
+
+    counter: {
+      buyer: {
+        totalNum: result.counter.buyer.totalNum.toFixed(8),
+        totalValue: result.counter.buyer.totalValue.toFixed(8),
+      },
+
+      seller: {
+        totalNum: result.counter.seller.totalNum.toFixed(8),
+        totalValue: result.counter.seller.totalValue.toFixed(8),
+      },
+    },
+
     commissionInfo: {
       total: result.commissionInfo.total.toFixed(8),
       buyer: {

@@ -8,6 +8,7 @@ const generateTradeListTable = require('../src/libs/table/trade_list');
 
 async function main() {
   const mySpotSymbolList = process.brickWalletCli.ctx.config?.symbolList || [];
+  // const mySpotSymbolList = ['TRUMPUSDT'];
 
   const tradeList = [];
   for (const symbolItem of mySpotSymbolList) {
@@ -21,12 +22,14 @@ async function main() {
     tradeList.push({
       symbol: symbolItem,
       avgPrice: calculateInfo.avgPrice,
-      totalValue: calculateInfo.totalValue,
-      totalNum: calculateInfo.totalNum,
+      totalValue: calculateInfo.counter.buyer.totalValue,
+      totalNum: (Number(calculateInfo.counter.buyer.totalNum) - Number(calculateInfo.counter.seller.totalNum)).toFixed(8),
     });
   }
 
-  generateTradeListTable(tradeList)
+  process.brickWalletCli.ctx.logger.debug(`tradeList = ${JSON.stringify(tradeList)}`);
+
+  generateTradeListTable(tradeList);
 }
 
 main();
