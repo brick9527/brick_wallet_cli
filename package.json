@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@binance/spot": "^24.0.1",
-    "cli-table": "^0.3.11",
+    "cli-table3": "^0.6.5",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "lodash": "^4.17.21",

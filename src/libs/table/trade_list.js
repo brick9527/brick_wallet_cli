@@ -1,4 +1,4 @@
-const Table = require('cli-table');
+const Table = require('cli-table3');
 
 function generateTradeListTable(tradeList = []) {
   if (tradeList.length === 0) {
