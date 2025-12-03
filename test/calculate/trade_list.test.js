@@ -55,15 +55,22 @@ describe('一、calculateTradeList 函数测试', () => {
 
       // 验证买入数量：初始0 + 0.00121000
       expect(result.counter.buyer.totalNum).to.equal('0.00121000');
+      
       // 验证买入价值：105.73236520 - 0.05 = 105.68236520
       expect(result.counter.buyer.totalValue).to.equal('105.68236520');
+
       // 验证手续费统计
       expect(result.commissionInfo.total).to.equal('0.05000000');
       expect(result.commissionInfo.buyer.total).to.equal('0.05000000');
       expect(result.commissionInfo.buyer.notMaker).to.equal('0.05000000');
       expect(result.commissionInfo.buyer.maker).to.equal('0.00000000');
+      expect(result.commissionInfo.seller.total).to.eq('0.00000000');
+      expect(result.commissionInfo.seller.notMaker).to.eq('0.00000000');
+      expect(result.commissionInfo.seller.maker).to.eq('0.00000000');
+
       // 验证平均价：totalValue / totalNum = 105.68236520 / 0.00121 ≈ 87340.79768595
       expect(result.avgPrice).to.equal('87340.79768595');
+
       // 验证首尾信息
       expect(result.firstIInfo).to.deep.equal(tradeList[0]);
       expect(result.lastInfo).to.deep.equal(tradeList[0]);
@@ -207,8 +214,6 @@ describe('一、calculateTradeList 函数测试', () => {
   });
 
   describe('7. savePoint 测试', () => {
-    // 定义 stub 变量，方便在测试中复用
-    let setSavePointStub;
 
     it('7.1 多条交易时应触发 _setSavePoint 且 savePoint 数值正确', () => {
       const symbolInfo = {
