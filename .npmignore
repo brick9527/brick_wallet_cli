@@ -1,0 +1,9 @@
+config.json
+.env
+
+logs
+node_modules
+sample_data
+xlsx
+test.json
+output

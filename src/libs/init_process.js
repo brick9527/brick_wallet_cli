@@ -1,4 +1,4 @@
-const config = require('../../config.json');
+const config = require('../../config.sample.json');
 
 const getLogger = require('../util/log4js').getLogger;
 const logger = getLogger('init_process');
