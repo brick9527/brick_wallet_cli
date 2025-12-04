@@ -8,7 +8,11 @@ function _checkConfig(options) {
     throw new Error ('需要指定配置文件. 详见 --help');
   }
 
-  const configPath = path.join(__dirname, options.config);
+  let configPath = path.join(process.cwd(), options.config);
+  if (path.isAbsolute(options.config)) {
+    configPath = options.config;
+  }
+
   const config = require(configPath);
 
   return config;
@@ -47,7 +51,7 @@ const cli = meow(`
 	  --config, -c  指定配置文件
 
 	Examples
-	  $ bwc unicorns --config ./config.json
+	  $ bwc getallorder --config ./config.json
 `, {
 	flags: {
 		config: {

@@ -1,5 +1,9 @@
 config.json
 .env
+test
+docs
+README.md
+eslint.config.mjs
 
 logs
 node_modules
