@@ -20,7 +20,7 @@
   "author": "brick9527",
   "type": "commonjs",
   "scripts": {
-    "test": "mocha test/calculate/trade_list.test.js --exit",
+    "test": "mocha test/**/*.test.js --exit",
     "lint": "eslint src/ bin/ eslint.config.mjs README.md",
     "getaccount": "node bin/get_account.js",
     "getallorder": "node bin/get_all_order.js"

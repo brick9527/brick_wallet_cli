@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 const { expect } = require('chai');
 const sinon = require('sinon');
-let calculateTradeList = require('../../src/libs/calculate/trade_list'); // 替换为实际的文件路径
+let calculateTradeList = require('../../src/libs/calculate/trade_list');
 
 // 模拟 logger 避免运行时报错
 before(() => {
@@ -19,7 +19,7 @@ afterEach(() => {
   sinon.reset();
 });
 
-describe('一、calculateTradeList 函数测试', () => {
+describe('一、calculateTradeList 函数测试（加强版）', () => {
   // 基础测试数据
   const symbolInfo = {
     status: true,
@@ -31,6 +31,27 @@ describe('一、calculateTradeList 函数测试', () => {
   describe('1. 边界条件测试', () => {
     it('1.1 tradeList 为空时应抛出错误', () => {
       expect(() => calculateTradeList([], symbolInfo)).to.throw('tradeList 不能为空');
+    });
+    
+    it('1.2 tradeList 只有一条交易时应正确处理', () => {
+      const tradeList = [
+        {
+          symbol: 'BTCUSDT',
+          id: 1,
+          price: '87382.12000000',
+          qty: '0.00121000',
+          quoteQty: '105.73236520',
+          commission: '0.05',
+          commissionAsset: 'USDT',
+          isBuyer: true,
+          isMaker: false,
+          isBestMatch: true,
+        },
+      ];
+
+      const result = calculateTradeList(tradeList, symbolInfo);
+      expect(result.firstIInfo).to.deep.equal(tradeList[0]);
+      expect(result.lastInfo).to.deep.equal(tradeList[0]);
     });
   });
 
@@ -54,22 +75,19 @@ describe('一、calculateTradeList 函数测试', () => {
       const result = calculateTradeList(tradeList, symbolInfo);
 
       // 验证买入数量：初始0 + 0.00121000
-      expect(result.counter.buyer.totalNum).to.equal('0.00121000');
+      expect(result.buyerCount.totalNum).to.equal('0.00121000');
       
       // 验证买入价值：105.73236520 - 0.05 = 105.68236520
-      expect(result.counter.buyer.totalValue).to.equal('105.68236520');
+      expect(result.buyerCount.totalValue).to.equal('105.68236520');
 
       // 验证手续费统计
-      expect(result.commissionInfo.total).to.equal('0.05000000');
-      expect(result.commissionInfo.buyer.total).to.equal('0.05000000');
-      expect(result.commissionInfo.buyer.notMaker).to.equal('0.05000000');
-      expect(result.commissionInfo.buyer.maker).to.equal('0.00000000');
-      expect(result.commissionInfo.seller.total).to.eq('0.00000000');
-      expect(result.commissionInfo.seller.notMaker).to.eq('0.00000000');
-      expect(result.commissionInfo.seller.maker).to.eq('0.00000000');
-
-      // 验证平均价：totalValue / totalNum = 105.68236520 / 0.00121 ≈ 87340.79768595
-      expect(result.avgPrice).to.equal('87340.79768595');
+      expect(result.commissionCount.totalNum).to.equal('0.05000000');
+      expect(result.commissionCount.buyer.totalNum).to.equal('0.05000000');
+      expect(result.commissionCount.buyer.notMakerNum).to.equal('0.05000000');
+      expect(result.commissionCount.buyer.makerNum).to.equal('0.00000000');
+      expect(result.commissionCount.seller.totalNum).to.eq('0.00000000');
+      expect(result.commissionCount.seller.notMakerNum).to.eq('0.00000000');
+      expect(result.commissionCount.seller.makerNum).to.eq('0.00000000');
 
       // 验证首尾信息
       expect(result.firstIInfo).to.deep.equal(tradeList[0]);
@@ -97,20 +115,18 @@ describe('一、calculateTradeList 函数测试', () => {
       const result = calculateTradeList(tradeList, symbolInfo);
 
       // 买入数量：0.00121 - 0.00000121 = 0.00120879
-      expect(result.counter.buyer.totalNum).to.equal('0.00120879');
+      expect(result.buyerCount.totalNum).to.equal('0.00120879');
       // 买入价值：105.73236520（基础货币手续费不扣减价值）
-      expect(result.counter.buyer.totalValue).to.equal('105.73236520');
+      expect(result.buyerCount.totalValue).to.equal('105.73236520');
       // 手续费换算：87382.12 * 0.00000121 = 0.1057323652 → 保留8位小数
-      expect(result.commissionInfo.total).to.equal('0.10573237');
-      expect(result.commissionInfo.buyer.total).to.equal('0.10573237');
-      expect(result.commissionInfo.buyer.maker).to.equal('0.10573237');
-      // 平均价：105.73236520 / 0.00120879 ≈ 87469.58958959
-      expect(result.avgPrice).to.equal('87469.58958959');
+      expect(result.commissionCount.totalNum).to.equal('0.10573237');
+      expect(result.commissionCount.buyer.totalNum).to.equal('0.10573237');
+      expect(result.commissionCount.buyer.makerNum).to.equal('0.10573237');
     });
   });
 
   describe('4. 卖出交易测试 - 手续费为计价货币(USDT)', () => {
-    it('4.1 单条卖出交易应正确计算数值', () => {
+    it('4.1 单条卖出交易(isMaker=false)应正确计算数值', () => {
       const tradeList = [
         {
           symbol: 'BTCUSDT',
@@ -129,16 +145,44 @@ describe('一、calculateTradeList 函数测试', () => {
       const result = calculateTradeList(tradeList, symbolInfo);
 
       // 卖出数量：0 + 0.00121000
-      expect(result.counter.seller.totalNum).to.equal('0.00121000');
+      expect(result.sellerCount.totalNum).to.equal('0.00121000');
       // 卖出价值：105.73236520 - 0.05 = 105.68236520
-      expect(result.counter.seller.totalValue).to.equal('105.68236520');
+      expect(result.sellerCount.totalValue).to.equal('105.68236520');
       // 手续费统计
-      expect(result.commissionInfo.total).to.equal('0.05000000');
-      expect(result.commissionInfo.seller.total).to.equal('0.05000000');
-      expect(result.commissionInfo.seller.notMaker).to.equal('0.05000000');
+      expect(result.commissionCount.totalNum).to.equal('0.05000000');
+      expect(result.commissionCount.seller.totalNum).to.equal('0.05000000');
+      expect(result.commissionCount.seller.notMakerNum).to.equal('0.05000000');
       // 买入数据应为初始值
-      expect(result.counter.buyer.totalNum).to.equal('0.00000000');
-      expect(result.counter.buyer.totalValue).to.equal('0.00000000');
+      expect(result.buyerCount.totalNum).to.equal('0.00000000');
+      expect(result.buyerCount.totalValue).to.equal('0.00000000');
+    });
+    
+    it('4.2 单条卖出交易(isMaker=true)应正确计算数值', () => {
+      const tradeList = [
+        {
+          symbol: 'BTCUSDT',
+          id: 4,
+          price: '87382.12000000',
+          qty: '0.00121000',
+          quoteQty: '105.73236520',
+          commission: '0.05',
+          commissionAsset: 'USDT',
+          isBuyer: false,
+          isMaker: true,
+          isBestMatch: true,
+        },
+      ];
+
+      const result = calculateTradeList(tradeList, symbolInfo);
+
+      // 卖出数量：0 + 0.00121000
+      expect(result.sellerCount.totalNum).to.equal('0.00121000');
+      // 卖出价值：105.73236520 - 0.05 = 105.68236520
+      expect(result.sellerCount.totalValue).to.equal('105.68236520');
+      // 手续费统计
+      expect(result.commissionCount.totalNum).to.equal('0.05000000');
+      expect(result.commissionCount.seller.totalNum).to.equal('0.05000000');
+      expect(result.commissionCount.seller.makerNum).to.equal('0.05000000');
     });
   });
 
@@ -162,29 +206,141 @@ describe('一、calculateTradeList 函数测试', () => {
       const result = calculateTradeList(tradeList, symbolInfo);
 
       // 卖出数量：0.00121 - 0.00000121 = 0.00120879
-      expect(result.counter.seller.totalNum).to.equal('0.00120879');
+      expect(result.sellerCount.totalNum).to.equal('0.00120879');
       // 卖出价值：105.73236520
-      expect(result.counter.seller.totalValue).to.equal('105.73236520');
+      expect(result.sellerCount.totalValue).to.equal('105.73236520');
       // 手续费换算：87382.12 * 0.00000121 = 0.1057323652 → 保留8位
-      expect(result.commissionInfo.total).to.equal('0.10573237');
-      expect(result.commissionInfo.seller.total).to.equal('0.10573237');
-      expect(result.commissionInfo.seller.maker).to.equal('0.10573237');
+      expect(result.commissionCount.totalNum).to.equal('0.10573237');
+      expect(result.commissionCount.seller.totalNum).to.equal('0.10573237');
+      expect(result.commissionCount.seller.makerNum).to.equal('0.10573237');
     });
   });
 
-  describe('6. initData 初始化测试', () => {
-    it('6.1 应正确使用initData的初始值', () => {
+  describe('6. 混合交易测试', () => {
+    it('6.1 先买入后卖出交易应正确计算数值', () => {
+      const tradeList = [
+        {
+          symbol: 'BTCUSDT',
+          id: 12,
+          price: '87382.12000000',
+          qty: '0.00121000',
+          quoteQty: '105.73236520',
+          commission: '0.05',
+          commissionAsset: 'USDT',
+          isBuyer: true,
+          isMaker: false,
+          isBestMatch: true,
+        },
+        {
+          symbol: 'BTCUSDT',
+          id: 13,
+          price: '88000.00000000',
+          qty: '0.00121000',
+          quoteQty: '106.48000000',
+          commission: '0.05324',
+          commissionAsset: 'USDT',
+          isBuyer: false,
+          isMaker: true,
+          isBestMatch: true,
+        },
+      ];
+
+      const result = calculateTradeList(tradeList, symbolInfo);
+
+      // 验证买入数量和价值
+      expect(result.buyerCount.totalNum).to.equal('0.00121000');
+      expect(result.buyerCount.totalValue).to.equal('105.68236520');
+      
+      // 验证卖出数量和价值
+      expect(result.sellerCount.totalNum).to.equal('0.00121000');
+      expect(result.sellerCount.totalValue).to.equal('106.42676000');
+      
+      // 验证手续费统计
+      expect(result.commissionCount.totalNum).to.equal('0.10324000');
+      expect(result.commissionCount.buyer.totalNum).to.equal('0.05000000');
+      expect(result.commissionCount.seller.totalNum).to.equal('0.05324000');
+      expect(result.commissionCount.seller.makerNum).to.equal('0.05324000');
+    });
+    
+    it('6.2 多条混合交易应正确计算数值', () => {
+      const tradeList = [
+        {
+          symbol: 'BTCUSDT',
+          id: 14,
+          price: '87382.12000000',
+          qty: '0.00100000',
+          quoteQty: '87.38212000',
+          commission: '0.04369106',
+          commissionAsset: 'USDT',
+          isBuyer: true,
+          isMaker: false,
+          isBestMatch: true,
+        },
+        {
+          symbol: 'BTCUSDT',
+          id: 15,
+          price: '87500.00000000',
+          qty: '0.00200000',
+          quoteQty: '175.00000000',
+          commission: '0.00000200',
+          commissionAsset: 'BTC',
+          isBuyer: true,
+          isMaker: true,
+          isBestMatch: true,
+        },
+        {
+          symbol: 'BTCUSDT',
+          id: 16,
+          price: '88000.00000000',
+          qty: '0.00150000',
+          quoteQty: '132.00000000',
+          commission: '0.06600000',
+          commissionAsset: 'USDT',
+          isBuyer: false,
+          isMaker: false,
+          isBestMatch: true,
+        },
+      ];
+
+      const result = calculateTradeList(tradeList, symbolInfo);
+
+      // 验证买入数量和价值
+      expect(result.buyerCount.totalNum).to.equal('0.00299800'); // 0.001 + (0.002 - 0.000002)
+      expect(result.buyerCount.totalValue).to.equal('262.33842894'); // (87.38212 - 0.04369106) + 175
+      
+      // 验证卖出数量和价值
+      expect(result.sellerCount.totalNum).to.equal('0.00150000');
+      expect(result.sellerCount.totalValue).to.equal('131.93400000'); // 132 - 0.066
+      
+      // 验证手续费统计
+      expect(result.commissionCount.totalNum).to.equal('0.28469106'); // 0.04369106 + (87500 * 0.000002) + 0.066
+    });
+  });
+
+  describe('7. initData 初始化测试', () => {
+    it('7.1 应正确使用initData的初始值(包含commissionCount)', () => {
       const initData = {
-        counter: {
+        buyerCount: {
+          totalNum: 0.001,
+          totalValue: 100,
+        },
+        sellerCount: {
+          totalNum: 0.002,
+          totalValue: 200,
+        },
+        commissionCount: {
+          total: 0.1,
           buyer: {
-            totalNum: 0.001,
-            totalValue: 100,
+            total: 0.05,
+            maker: 0.02,
+            notMaker: 0.03
           },
           seller: {
-            totalNum: 0.002,
-            totalValue: 200,
-          },
-        },
+            total: 0.05,
+            maker: 0.01,
+            notMaker: 0.04
+          }
+        }
       };
 
       const tradeList = [
@@ -205,21 +361,21 @@ describe('一、calculateTradeList 函数测试', () => {
       const result = calculateTradeList(tradeList, symbolInfo, initData);
 
       // 买入数量：0.001 + 0.00121 = 0.00221
-      expect(result.counter.buyer.totalNum).to.equal('0.00221000');
+      expect(result.buyerCount.totalNum).to.equal('0.00221000');
       // 买入价值：100 + (105.73236520 - 0.05) = 205.68236520
-      expect(result.counter.buyer.totalValue).to.equal('205.68236520');
+      expect(result.buyerCount.totalValue).to.equal('205.68236520');
       // 卖出数量保持初始值
-      expect(result.counter.seller.totalNum).to.equal('0.00200000');
+      expect(result.sellerCount.totalNum).to.equal('0.00200000');
+      // 验证手续费统计
+      expect(result.commissionCount.totalNum).to.equal('0.15000000'); // 0.1 + 0.05
+      expect(result.commissionCount.buyer.totalNum).to.equal('0.10000000'); // 0.05 + 0.05
+      expect(result.commissionCount.buyer.notMakerNum).to.equal('0.08000000'); // 0.03 + 0.05
     });
   });
 
-  describe('7. savePoint 测试', () => {
+  describe('8. savePoint 测试', () => {
 
-    it('7.1 多条交易时应触发 _setSavePoint 且 savePoint 数值正确', () => {
-      const symbolInfo = {
-        baseCurrency: 'BTC',
-        quoteCurrency: 'USDT',
-      };
+    it('8.1 多条交易时应在倒数第二个节点存储savePoint', () => {
       const tradeList = [
         {
           symbol: 'BTCUSDT',
@@ -259,38 +415,27 @@ describe('一、calculateTradeList 函数测试', () => {
         },
       ];
 
-      // 执行核心函数
       const calculateResult = calculateTradeList(tradeList, symbolInfo);
 
-      /**************************
-       * 1. 验证 _setSavePoint 调用次数（仅倒数第二个元素触发，调用 1 次）
-       **************************/
       expect(calculateResult.savePoint.id).to.equal(8);
 
-      /**************************
-       * 2. 验证 savePoint 数值正确性（从 stub 的调用参数中获取 result）
-       **************************/
       const savePoint = calculateResult.savePoint;
 
       // 计算预期值：前两个交易处理后的累加结果
       const expectedBuyerTotalNum = 0.00121 + 0.001; // 0.00221
       const expectedBuyerTotalValue = 105.7323652 - 0.05 + (87.38212 - 0.02); // 193.0444852
-      const expectedAvgPrice = (expectedBuyerTotalValue / expectedBuyerTotalNum).toFixed(8); // 87350.44579185
 
-      // 断言 savePoint 核心数值
-      expect(savePoint.counter.buyer.totalNum, 'buyer.totalNum 格式化错误').to.equal(expectedBuyerTotalNum.toFixed(8));
-      expect(savePoint.counter.buyer.totalValue, 'buyer.totalValue 格式化错误').to.equal(expectedBuyerTotalValue.toFixed(8));
-      expect(savePoint.avgPrice, 'avgPrice 计算错误').to.equal(expectedAvgPrice);
+      expect(savePoint.buyerCount.totalNum).to.equal(expectedBuyerTotalNum.toFixed(8));
+      expect(savePoint.buyerCount.totalValue).to.equal(expectedBuyerTotalValue.toFixed(8));
 
-      // 额外验证 commissionInfo 数值（前两个交易的手续费累加：0.05 + 0.02 = 0.07）
-      expect(savePoint.commissionInfo.total, '手续费总计错误').to.equal('0.07000000');
-      expect(savePoint.commissionInfo.buyer.total, '买方手续费总计错误').to.equal('0.07000000');
-      expect(savePoint.commissionInfo.buyer.maker, '买方 maker 手续费错误').to.equal('0.02000000'); // 第二个交易是 maker
-      expect(savePoint.commissionInfo.buyer.notMaker, '买方 notMaker 手续费错误').to.equal('0.05000000'); // 第一个交易是 notMaker
+      // 验证手续费统计
+      expect(savePoint.commissionCount.totalNum).to.equal('0.07000000');
+      expect(savePoint.commissionCount.buyer.totalNum).to.equal('0.07000000');
+      expect(savePoint.commissionCount.buyer.makerNum).to.equal('0.02000000');
+      expect(savePoint.commissionCount.buyer.notMakerNum).to.equal('0.05000000');
     });
 
-    it('7.2 单条交易时不触发 _setSavePoint', () => {
-      const symbolInfo = { baseCurrency: 'BTC', quoteCurrency: 'USDT' };
+    it('8.2 单条交易时savePoint应只包含id字段', () => {
       const tradeList = [
         {
           symbol: 'BTCUSDT',
@@ -308,13 +453,19 @@ describe('一、calculateTradeList 函数测试', () => {
 
       const calculateResult = calculateTradeList(tradeList, symbolInfo);
 
-      // 验证 _setSavePoint 未被调用
-      expect(calculateResult.savePoint.avgPrice).to.equal(0);
-
+      // 验证 savePoint 只包含 id 字段
+      expect(calculateResult.savePoint.id).to.equal(9);
+      expect(calculateResult.savePoint).to.not.have.property('buyerCount');
+      expect(calculateResult.savePoint).to.not.have.property('sellerCount');
+      expect(calculateResult.savePoint).to.not.have.property('commissionCount');
+      
+      // 验证其他计算结果正确
+      expect(calculateResult.buyerCount.totalNum).to.equal('0.00121000');
+      expect(calculateResult.buyerCount.totalValue).to.equal('105.68236520');
+      expect(calculateResult.commissionCount.totalNum).to.equal('0.05000000');
     });
 
-    it('7.3 两条交易时触发 _setSavePoint 且数值正确', () => {
-      const symbolInfo = { baseCurrency: 'BTC', quoteCurrency: 'USDT' };
+    it('8.3 两条交易时savePoint应包含第一条交易的结果', () => {
       const tradeList = [
         {
           symbol: 'BTCUSDT',
@@ -344,50 +495,14 @@ describe('一、calculateTradeList 函数测试', () => {
 
       const calculateResult = calculateTradeList(tradeList, symbolInfo);
 
-      // 验证调用次数
       expect(calculateResult.savePoint.id).to.equal(11);
 
-      // 验证数值（仅第一个交易的结果，因为触发时机是倒数第二个元素，即索引 0）
+      // 验证数值（仅第一个交易的结果）
       const savePoint = calculateResult.savePoint;
 
-      expect(savePoint.counter.buyer.totalNum).to.equal('0.00121000');
-      expect(savePoint.counter.buyer.totalValue).to.equal('105.68236520'); // 105.73236520 - 0.05
-      expect(savePoint.commissionInfo.total).to.equal('0.05000000');
-    });
-  });
-
-  describe('8. 平均价计算测试', () => {
-    it('8.1 buyer的totalValue/totalNum应正确计算平均价', () => {
-      const tradeList = [
-        {
-          symbol: 'BTCUSDT',
-          id: 9,
-          price: '100000.00000000',
-          qty: '0.00200000',
-          quoteQty: '200.00000000',
-          commission: '0.0',
-          commissionAsset: 'USDT',
-          isBuyer: true,
-          isMaker: true,
-          isBestMatch: true,
-        },
-        {
-          symbol: 'BTCUSDT',
-          id: 10,
-          price: '100000.00000000',
-          qty: '0.00300000',
-          quoteQty: '300.00000000',
-          commission: '0.0',
-          commissionAsset: 'USDT',
-          isBuyer: true,
-          isMaker: true,
-          isBestMatch: true,
-        },
-      ];
-
-      const result = calculateTradeList(tradeList, symbolInfo);
-      // totalValue: 200 + 300 = 500; totalNum: 0.002 + 0.003 = 0.005; 500/0.005 = 100000
-      expect(result.avgPrice).to.equal('100000.00000000');
+      expect(savePoint.buyerCount.totalNum).to.equal('0.00121000');
+      expect(savePoint.buyerCount.totalValue).to.equal('105.68236520'); // 105.73236520 - 0.05
+      expect(savePoint.commissionCount.totalNum).to.equal('0.05000000');
     });
   });
 });
