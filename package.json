@@ -23,7 +23,8 @@
     "test": "mocha test/**/*.test.js --exit",
     "lint": "eslint src/ bin/ eslint.config.mjs README.md",
     "getaccount": "node bin/get_account.js",
-    "getallorder": "node bin/get_all_order.js"
+    "getallorder": "node bin/get_all_order.js",
+    "gettime": "node bin/get_time.js"
   },
   "dependencies": {
     "@binance/spot": "^24.0.1",

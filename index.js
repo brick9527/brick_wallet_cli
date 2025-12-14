@@ -31,6 +31,11 @@ function main (inputCommand, options) {
     require('./bin/get_account')(config);
   }
 
+  // gettime
+  if (inputCommand === 'gettime') {
+    require('./bin/get_time')();
+  }
+
   // version
   if (inputCommand === 'version') {
     const packageInfo = require('./package.json');
@@ -45,6 +50,7 @@ const cli = meow(`
   Input
     getallorder   获取账户全部交易记录，计算各币对成本价
     getaccount    获取账户信息
+    gettime       获取服务器时间
     version       获取版本
     
 	Options
