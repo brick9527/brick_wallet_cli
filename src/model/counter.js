@@ -3,6 +3,9 @@ class Counter {
   // 进程id
   _id = null;
 
+  // 均价
+  _avgPrice = 0;
+
   // 买家统计
   _buyerCount = {
     totalNum: 0,
@@ -36,32 +39,50 @@ class Counter {
     this._id = id || process.pid + '-' + Date.now();
 
     this._buyerCount = {
-      totalNum: buyerCount?.totalNum || this._buyerCount.totalNum,
-      totalValue: buyerCount?.totalValue || this._buyerCount.totalValue,
+      totalNum: Number(buyerCount?.totalNum || this._buyerCount.totalNum),
+      totalValue: Number(buyerCount?.totalValue || this._buyerCount.totalValue),
     };
 
     this._sellerCount = {
-      totalNum: sellerCount?.totalNum || this._sellerCount.totalNum,
-      totalValue: sellerCount?.totalValue || this._sellerCount.totalValue,
+      totalNum: Number(sellerCount?.totalNum || this._sellerCount.totalNum),
+      totalValue: Number(sellerCount?.totalValue || this._sellerCount.totalValue),
     };
 
     this._commissionCount = {
-      total: commissionCount?.total || this._commissionCount.total,
+      total: Number(commissionCount?.total || this._commissionCount.total),
       buyer: {
-        total: commissionCount?.buyer?.total || this._commissionCount.buyer.total,
-        maker: commissionCount?.buyer?.maker || this._commissionCount.buyer.maker,
-        notMaker: commissionCount?.buyer?.notMaker || this._commissionCount.buyer.notMaker,
+        total: Number(commissionCount?.buyer?.total || this._commissionCount.buyer.total),  
+        maker: Number(commissionCount?.buyer?.maker || this._commissionCount.buyer.maker),
+        notMaker: Number(commissionCount?.buyer?.notMaker || this._commissionCount.buyer.notMaker),
       },
       seller: {
-        total: commissionCount?.seller?.total || this._commissionCount.seller.total,
-        maker: commissionCount?.seller?.maker || this._commissionCount.seller.maker,  
-        notMaker: commissionCount?.seller?.notMaker || this._commissionCount.seller.notMaker,
+        total: Number(commissionCount?.seller?.total || this._commissionCount.seller.total),
+        maker: Number(commissionCount?.seller?.maker || this._commissionCount.seller.maker),  
+        notMaker: Number(commissionCount?.seller?.notMaker || this._commissionCount.seller.notMaker),
       },
     };
+
+    if (this._buyerCount.totalNum !== 0 ) {
+      this._avgPrice = this._buyerCount.totalValue / this._buyerCount.totalNum;
+    }
   }
 
   get id() {
     return this._id;
+  }
+
+  get avgPrice() {
+    return this._avgPrice.toFixed(8);
+  }
+
+  // 计算最新的均价
+  calculateAvgPrice() {
+    if (this._buyerCount.totalNum === 0) {
+      this._avgPrice = 0;
+      return;
+    }
+
+    this._avgPrice = this._buyerCount.totalValue / this._buyerCount.totalNum;
   }
 
   // #region Buyer相关
@@ -188,6 +209,7 @@ class Counter {
   getJSON() {
     return {
       id: this._id,
+      avgPrice: this.avgPrice,
       buyerCount: {
         totalNum: this.buyerTotalNum,
         totalValue: this.buyerTotalValue,

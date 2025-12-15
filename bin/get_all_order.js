@@ -30,8 +30,8 @@ async function runGetAllOrder(config) {
       tradeList.push({
         symbol: symbolItem,
         avgPrice: calculateInfo.avgPrice,
-        totalValue: calculateInfo.counter.buyer.totalValue,
-        totalNum: (Number(calculateInfo.counter.buyer.totalNum) - Number(calculateInfo.counter.seller.totalNum)).toFixed(8),
+        totalValue: calculateInfo.buyerCount.totalValue,
+        totalNum: (Number(calculateInfo.buyerCount.totalNum) - Number(calculateInfo.sellerCount.totalNum)).toFixed(8),
       });
     } catch (err) {
       process.brickWalletCli.ctx.logger.error(`获取 ${symbolItem} 相关订单失败。${err.message}`);

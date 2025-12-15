@@ -56,6 +56,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
         // 设置存储点
         if (i === tradeList.length - 2) {
+          counter.calculateAvgPrice();
           result.savePoint = {
             id: result.savePoint.id,
             ..._.omit(counter.getJSON(), ['id']),
@@ -75,6 +76,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
       // 设置存储点
       if (i === tradeList.length - 2) {
+        counter.calculateAvgPrice();
         result.savePoint = {
           id: result.savePoint.id,
           ..._.omit(counter.getJSON(), ['id']),
@@ -96,6 +98,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
       // 设置存储点
       if (i === tradeList.length - 2) {
+        counter.calculateAvgPrice();
         result.savePoint = {
           id: result.savePoint.id,
           ..._.omit(counter.getJSON(), ['id']),
@@ -115,6 +118,7 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
     // 设置存储点
     if (i === tradeList.length - 2) {
+      counter.calculateAvgPrice();
       result.savePoint = {
         id: result.savePoint.id,
         ..._.omit(counter.getJSON(), ['id']),
@@ -123,6 +127,8 @@ function calculateTradeList(tradeList, symbolInfo, initData = {}) {
 
     // #endregion
   }
+
+  counter.calculateAvgPrice();
 
   return {
     ...counter.getJSON(),

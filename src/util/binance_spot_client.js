@@ -7,8 +7,8 @@ function getClient (proxyConfig) {
     apiKey: config.apiKey,
     apiSecret: config.apiSecret,
     basePath: config.basePath || SPOT_REST_API_PROD_URL,
-    isAutoTimestamp: true,  // 自动同步服务器时间
-    isCheckServerTime: true, // 检查服务器时间
+    // isAutoTimestamp: true,  // 自动同步服务器时间
+    // isCheckServerTime: true, // 检查服务器时间
     ...proxyConfig,
   };
 
