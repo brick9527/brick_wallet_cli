@@ -40,6 +40,18 @@ async function getAccountAllOrder(symbol, options = {}) {
 
   logger.debug(`${symbol} calculate result = ${JSON.stringify(calculateResult)}`);
 
+  // 合并calculateResult中的数据
+  // const mergeCounter = new MergeCounter({
+  //   symbolInfo,
+  //   mergeQuoteCurrency: process.brickWalletCli.ctx.config?.merge_quote_currency || [],
+  // });
+  // mergeCounter.add({
+  //   symbol,
+  //   avgPrice: calculateResult.avgPrice,
+  //   totalValue: calculateResult.buyerCount.totalValue,
+  //   totalNum: calculateResult.buyerCount.totalNum,
+  // });
+
   return calculateResult;
 }
 

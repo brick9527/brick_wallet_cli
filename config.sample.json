@@ -10,11 +10,9 @@
   "trade": {
     "BTCUSDT": {
       "fromId": 5350162147,
-      "counter": {
-        "buyer": {
-          "totalNum": "3.24918997",
-          "totalValue": "25"
-        }
+      "buyerCount": {
+        "totalNum": "3.24918997",
+        "totalValue": "25"
       }
     }
   }
