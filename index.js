@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 'use strict';
-const meow = require('meow');
+
+const { Command } = require('commander');
+const packageJson = require('./package.json');
+
+const program = new Command();
+
 const path = require('path');
 
 function _checkConfig(options) {
@@ -18,60 +23,38 @@ function _checkConfig(options) {
   return config;
 }
 
-function main (inputCommand, options) {
-  // getallorder
-  if (inputCommand === 'getallorder') {
-    const config = _checkConfig(options);
-    require('./bin/get_all_order')(config);
-  }
+program.name('bwc')
+  .description('a wallet cli tool')
+  .version(packageJson.version);
 
-  // getaccount
-  if (inputCommand === 'getaccount') {
+// getaccount
+program.command('getaccount')
+  .description('获取账户信息')
+  .requiredOption('-c, --config <path>', '指定配置文件')
+  .action((options) => {
     const config = _checkConfig(options);
     require('./bin/get_account')(config);
-  }
+  });
 
-  // gettime
-  if (inputCommand === 'gettime') {
+// getallorder
+program.command('getallorder')
+  .description('获取账户全部交易记录，计算各币对成本价')
+  .requiredOption('-c, --config <path>', '指定配置文件')
+  .action((options) => {
+    const config = _checkConfig(options);
+    require('./bin/get_all_order')(config);
+  });
+
+// gettime
+program.command('gettime')
+  .description('获取服务器时间')
+  .action(() => {
     require('./bin/get_time')();
-  }
+  });
 
-  // version
-  if (inputCommand === 'version') {
-    const packageInfo = require('./package.json');
-    console.log(`包名: ${packageInfo.name}\n版本: ${packageInfo.version}\n作者: ${packageInfo.author}\nhomepage: ${packageInfo.homepage}`);
-  }
-}
+program.parse();
 
-const cli = meow(`
-	Usage
-	  $ bwc <input> <option>
-
-  Input
-    getallorder   获取账户全部交易记录，计算各币对成本价
-    getaccount    获取账户信息
-    gettime       获取服务器时间
-    version       获取版本
-    
-	Options
-	  --config, -c  指定配置文件
-
-	Examples
-	  $ bwc getallorder --config ./config.json
-`, {
-	flags: {
-		config: {
-			type: 'string',
-			alias: 'c'
-		}
-	}
-});
-/*
-{
-	input: ['unicorns'],
-	flags: {rainbow: true},
-	...
-}
-*/
-
-main(cli.input[0], cli.flags);
+// const options = program.opts();
+// const limit = options.first ? 1 : undefined;
+// console.log(options);
+// console.log(program.args[0].split(options.separator, limit));

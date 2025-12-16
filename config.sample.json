@@ -15,5 +15,11 @@
         "totalValue": "25"
       }
     }
-  }
+  },
+  "merge_quote_currency": [
+    "USDC",
+    "FDUSD",
+    "XUSD",
+    "USDC"
+  ]
 }
