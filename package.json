@@ -4,9 +4,9 @@
   "description": "a wallet cli tool",
   "main": "index.js",
   "bin": {
-    "bwc": "./index.js",
-    "brick_wallet_cli": "./index.js",
-    "brick-wallet-cli": "./index.js"
+    "bwc": "index.js",
+    "brick_wallet_cli": "index.js",
+    "brick-wallet-cli": "index.js"
   },
   "keywords": [
     "brick9527",
