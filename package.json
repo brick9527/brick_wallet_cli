@@ -14,6 +14,9 @@
     "web3.0",
     "cli"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "homepage": "https://github.com/brick9527/brick_wallet_cli#readme",
   "bugs": {
     "url": "https://github.com/brick9527/brick_wallet_cli/issues"

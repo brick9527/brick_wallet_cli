@@ -34,20 +34,54 @@ class Counter {
   };
   // #endregion
 
-  // 构造函数
+  /**
+   * Counter构造函数 - 初始化或更新交易统计计数器
+   * @param {Object} params - 构造参数对象
+   * @param {Object} [params.buyerCount] - 买家统计信息
+   * @param {Number} [params.buyerCount.totalNum] - 买家交易总数量
+   * @param {Number} [params.buyerCount.totalValue] - 买家交易总价值
+   * @param {Object} [params.sellerCount] - 卖家统计信息
+   * @param {Number} [params.sellerCount.totalNum] - 卖家交易总数量
+   * @param {Number} [params.sellerCount.totalValue] - 卖家交易总价值
+   * @param {Object} [params.commissionCount] - 手续费统计信息
+   * @param {Number} [params.commissionCount.total] - 总手续费
+   * @param {Object} [params.commissionCount.buyer] - 买家手续费
+   * @param {Number} [params.commissionCount.buyer.total] - 买家总手续费
+   * @param {Number} [params.commissionCount.buyer.maker] - 买家maker手续费
+   * @param {Number} [params.commissionCount.buyer.notMaker] - 买家notMaker手续费
+   * @param {Object} [params.commissionCount.seller] - 卖家手续费
+   * @param {Number} [params.commissionCount.seller.total] - 卖家总手续费
+   * @param {Number} [params.commissionCount.seller.maker] - 卖家maker手续费
+   * @param {Number} [params.commissionCount.seller.notMaker] - 卖家notMaker手续费
+   * @param {String} [params.id] - 计数器ID，不提供则自动生成
+   * @example
+   * -- 创建一个新的空计数器
+   * const counter = new Counter();
+   * 
+   * -- 创建一个带有初始统计数据的计数器
+   * const counter = new Counter({
+   *   buyerCount: { totalNum: 10, totalValue: 1000 },
+   *   sellerCount: { totalNum: 5, totalValue: 500 },
+   *   id: 'custom-counter-id'
+   * });
+   */
   constructor({buyerCount, sellerCount, commissionCount, id}) {
+    // 设置计数器ID，未提供则生成基于进程ID和时间戳的唯一ID
     this._id = id || process.pid + '-' + Date.now();
 
+    // 初始化买家统计信息，未提供则使用默认值
     this._buyerCount = {
       totalNum: Number(buyerCount?.totalNum || this._buyerCount.totalNum),
       totalValue: Number(buyerCount?.totalValue || this._buyerCount.totalValue),
     };
 
+    // 初始化卖家统计信息，未提供则使用默认值
     this._sellerCount = {
       totalNum: Number(sellerCount?.totalNum || this._sellerCount.totalNum),
       totalValue: Number(sellerCount?.totalValue || this._sellerCount.totalValue),
     };
 
+    // 初始化手续费统计信息，未提供则使用默认值
     this._commissionCount = {
       total: Number(commissionCount?.total || this._commissionCount.total),
       buyer: {
@@ -62,6 +96,7 @@ class Counter {
       },
     };
 
+    // 当买家总数量不为0时计算均价
     if (this._buyerCount.totalNum !== 0 ) {
       this._avgPrice = this._buyerCount.totalValue / this._buyerCount.totalNum;
     }
