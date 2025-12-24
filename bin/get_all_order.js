@@ -9,6 +9,7 @@ const getAllOrder = require('../src/controller/get_order/get_all_order');
 const generateTradeListTable = require('../src/libs/table/trade_list');
 const getSymbolInfo = require('../src/libs/get_symbol_info');
 const MergeCounter = require('../src/model/merge_counter');
+const getCurrentPrice = require('../src/controller/get_current_price');
 
 const logger = process.brickWalletCli.ctx.logger;
 
@@ -61,6 +62,9 @@ async function runGetAllOrder(config) {
 
   logger.debug(`recordList = ${JSON.stringify(recordList)}`);
 
+  // 获取所有币对的当前价格
+  const currentPriceObj = await getCurrentPrice(mySpotSymbolList);
+
   // 合并recordList中的数据
   const mergeObj = {};
   for (const recordItem of recordList) {
@@ -76,6 +80,7 @@ async function runGetAllOrder(config) {
       avgPrice: recordItem.avgPrice,
       totalValue: recordItem.totalValue,
       totalNum: recordItem.totalNum,
+      currentPrice: currentPriceObj.find(item => item.symbol === recordItem.symbol).price,
     });
   }
 

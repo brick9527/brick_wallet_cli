@@ -6,7 +6,7 @@ function generateTradeListTable(mergeDataList = []) {
   }
 
   const table = new Table({
-    head: ['#', 'Symbol', 'avgPrice', 'amount', 'totalValue'],
+    head: ['#', 'Symbol', 'avgPrice', 'amount', 'totalValue', 'price', 'P/L rate'],
   });
 
   for (let i = 0; i < mergeDataList.length; i++) {
@@ -20,7 +20,15 @@ function generateTradeListTable(mergeDataList = []) {
       totalNumContent += `${key}: ${mergeDataItem.mergeInfo[key].totalNum} (${mergeDataItem.mergeInfo[key].rate}%)\n`;
       totalValueContent += `${key}: ${mergeDataItem.mergeInfo[key].totalValue} (${mergeDataItem.mergeInfo[key].rate}%)\n`;
     }
-    table.push([i+1, mergeDataItem.symbolInfo.baseCurrency, avgPriceContent, totalNumContent, totalValueContent]);
+    table.push([
+      i+1,
+      mergeDataItem.symbolInfo.baseCurrency,
+      avgPriceContent,
+      totalNumContent,
+      totalValueContent,
+      mergeDataItem.currentPrice,
+      `${mergeDataItem.profitLossRate}%`,
+    ]);
   }
 
   console.log(table.toString());

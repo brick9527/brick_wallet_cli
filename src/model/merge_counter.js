@@ -16,6 +16,8 @@ class MergeCounter {
     avgPrice: 0,
     totalValue: 0,
     totalNum: 0,
+    currentPrice: 0,
+    profitLossRate: 0,
     symbolList: [],
 
     // ...info
@@ -119,15 +121,20 @@ class MergeCounter {
    *   .add({ symbol: 'BTCETH', avgPrice: 20, totalValue: 200, totalNum: 10 })
    *   .getResult();
    */
-  add({ symbol, avgPrice, totalValue, totalNum }) {
+  add({ symbol, avgPrice, totalValue, totalNum, currentPrice }) {
     // 检查交易对是否是基础交易对或在可合并列表中
     if (symbol === this._symbolInfo.symbol || this._mergeSymbolList.includes(symbol)) {
       // 更新该交易对的统计信息
       this._mergeCount.mergeInfo[symbol].avgPrice = avgPrice;
       this._mergeCount.mergeInfo[symbol].totalValue = totalValue;
       this._mergeCount.mergeInfo[symbol].totalNum = totalNum;
+      this._mergeCount.mergeInfo[symbol].currentPrice = Number(currentPrice);
       // 将交易对添加到已处理列表中
       this._mergeCount.symbolList.push(symbol);
+    }
+
+    if (symbol === this._symbolInfo.symbol) {
+      this._mergeCount.currentPrice = currentPrice;
     }
     // 返回当前实例，支持链式调用
     return this;
@@ -162,6 +169,10 @@ class MergeCounter {
     this._mergeCount.totalNum = totalNum;
     this._mergeCount.totalValue = totalValue;
     this._mergeCount.avgPrice = this._mergeCount.totalValue / this._mergeCount.totalNum;
+
+    // 计算合并后的利润损失率
+    // (当前价格 - 合并后的平均价格) / 合并后的平均价格 * 100
+    this._mergeCount.profitLossRate = (this._mergeCount.currentPrice - this._mergeCount.avgPrice) / this._mergeCount.avgPrice * 100;
 
     // 为每个交易对计算其占比和平均价格
     for (const symbol of this._mergeCount.symbolList) {
@@ -206,6 +217,8 @@ class MergeCounter {
       avgPrice: Number(this._mergeCount.avgPrice).toFixed(8),
       totalValue: Number(this._mergeCount.totalValue).toFixed(8),
       totalNum: Number(this._mergeCount.totalNum).toFixed(8),
+      currentPrice: Number(this._mergeCount.currentPrice).toFixed(8),
+      profitLossRate: Number(this._mergeCount.profitLossRate).toFixed(2),
       symbolList: this._mergeCount.symbolList,
       mergeInfo: {},
     };
