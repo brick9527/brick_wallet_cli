@@ -52,6 +52,21 @@ program.command('gettime')
     require('./bin/get_time')();
   });
 
+program.command('getsma')
+  .description('获取日均线')
+  .requiredOption('-d, --days <number>', '获取n日均线')
+  .requiredOption('-c, --config <path>', '指定配置文件')
+  .option('--enable-grid-price', '计算网格价', true)
+  .action((options) => {
+    const config = _checkConfig(options);
+
+    require('./bin/get_sma')({
+      dayRange: Number(options.days),
+      enableGridPrice: options.enableGridPrice,
+      config,
+    });
+  });
+
 program.parse();
 
 // const options = program.opts();

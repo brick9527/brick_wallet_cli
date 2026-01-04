@@ -42,7 +42,8 @@
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "lodash": "^4.17.21",
-    "log4js": "^6.9.1"
+    "log4js": "^6.9.1",
+    "trading-signals": "^7.4.2"
   },
   "devDependencies": {
     "@eslint/css": "^0.14.1",
