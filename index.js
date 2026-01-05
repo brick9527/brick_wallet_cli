@@ -72,6 +72,17 @@ program.command('getsma')
     });
   });
 
+program.command('genconfig')
+  .description('生成配置文件')
+  .option('-d, --use-default', '直接生成配置文件，不提示确认', false)
+  .option('-o, --output <path>', '指定输出配置文件的路径.默认当前目录下config.json', './config.json')
+  .action((options) => {
+    require('./bin/generate_config')({
+      useDefault: options.useDefault,
+      output: options.output,
+    });
+  });
+
 program.parse();
 
 // const options = program.opts();
