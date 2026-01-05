@@ -3,6 +3,9 @@
 
 const { Command } = require('commander');
 const packageJson = require('./package.json');
+const updateNotifier = require('update-notifier');
+
+updateNotifier({ pkg: packageJson }).notify();
 
 const program = new Command();
 
@@ -12,7 +15,7 @@ function _checkConfig(options) {
   if (!options?.config) {
     throw new Error ('需要指定配置文件. 详见 --help');
   }
-
+  
   let configPath = path.join(process.cwd(), options.config);
   if (path.isAbsolute(options.config)) {
     configPath = options.config;
