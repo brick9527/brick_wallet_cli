@@ -3,7 +3,10 @@ config.json
 test
 docs
 README.md
+CHANGELOG.md
 eslint.config.mjs
+Dockerfile
+.gitignore
 
 logs
 node_modules
