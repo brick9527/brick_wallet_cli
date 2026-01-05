@@ -59,6 +59,7 @@ program.command('getsma')
   .description('获取日均线')
   .requiredOption('-d, --days <number>', '获取n日均线')
   .requiredOption('-c, --config <path>', '指定配置文件')
+  .option('-o, --output <path>', '指定输出JSON文件的路径')
   .option('--enable-grid-price', '计算网格价', true)
   .action((options) => {
     const config = _checkConfig(options);
@@ -67,6 +68,7 @@ program.command('getsma')
       dayRange: Number(options.days),
       enableGridPrice: options.enableGridPrice,
       config,
+      output: options.output,
     });
   });
 

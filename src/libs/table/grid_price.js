@@ -38,6 +38,15 @@ function generateGridPriceTable(gridPriceList = {}) {
 
   for (let i = 0; i < gridPriceList.length; i++) {
     const gridPriceItem = gridPriceList[i];
+    if (!gridPriceItem.gridPrice) {
+      table.push([
+        i+1,
+        gridPriceItem.symbol,
+        gridPriceItem.range,
+        gridPriceItem.avgPrice,
+      ]);
+      continue;
+    }
 
     const offContent = `5% : ${gridPriceItem.gridPrice.off._5_off}\n` +
                         `10% : ${gridPriceItem.gridPrice.off._10_off}\n` +
